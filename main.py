@@ -4,21 +4,23 @@ import time
 import httpx
 from bs4 import BeautifulSoup
 
+
 async def work(client, url):
     resp = await client.get(url)
-    soup = resp.text
-    # category1 = BeautifulSoup(resp.text, 'lxml').find('a', itemprop ='item')
-    # print(category1)
-    # price = soup.find('div', class_='row row-flex testing2')
-    # data = []
-    # for i in soup:
-    #     category1 = i.findAllNext('h1').find('name')
-    #     price = i.findAllNext('price')
-    #     # print(desc)
-    #
-    #     data.append([category1, price])
+    data = []
+    if resp.status_code != 200:
+        pass
 
-    return soup
+    else:
+        soup = BeautifulSoup(resp.text, 'lxml')
+        category1 = soup.find('div', class_='breadcrumbs').findAll('a')[1].get('title').strip()
+        category2 = soup.find('div', class_='breadcrumbs').findAll('a')[2].get('title').strip()
+
+        data.append([category1, category2])
+
+
+    return data
+
 
 async def main():
     # s = AsyncHTMLSession()
@@ -27,7 +29,9 @@ async def main():
     async with httpx.AsyncClient() as client:
         tasks = []
 
+
         for url in urls:
+
             tasks.append(asyncio.create_task(work(client, url)))
 
         results = await asyncio.gather(*tasks)
